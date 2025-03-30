@@ -17,6 +17,9 @@
 
 #include "ocr_result.hpp"
 #include "../jni/jni_helper.h"
+#include "../utils/log.h"
+
+#define LOG_TAG "OcrResult"
 
 using namespace smartautoclicker;
 
@@ -24,14 +27,14 @@ jobject OcrResult::toJavaObject(JNIEnv *env) const {
     // Find the OcrResult Java class
     jclass javaClass = env->FindClass("com/buzbuz/smartautoclicker/core/detection/OcrResult");
     if (javaClass == nullptr) {
-        LOGE("Failed to find OcrResult Java class");
+        LOGE(LOG_TAG, "Failed to find OcrResult Java class");
         return nullptr;
     }
 
     // Find the constructor
     jmethodID constructor = env->GetMethodID(javaClass, "<init>", "(ZLjava/lang/String;FLandroid/graphics/Rect;)V");
     if (constructor == nullptr) {
-        LOGE("Failed to find OcrResult constructor");
+        LOGE(LOG_TAG, "Failed to find OcrResult constructor");
         env->DeleteLocalRef(javaClass);
         return nullptr;
     }
@@ -42,7 +45,7 @@ jobject OcrResult::toJavaObject(JNIEnv *env) const {
     // Create the Java Rect for bounding box
     jclass rectClass = env->FindClass("android/graphics/Rect");
     if (rectClass == nullptr) {
-        LOGE("Failed to find Rect class");
+        LOGE(LOG_TAG, "Failed to find Rect class");
         env->DeleteLocalRef(javaClass);
         env->DeleteLocalRef(text);
         return nullptr;
@@ -50,7 +53,7 @@ jobject OcrResult::toJavaObject(JNIEnv *env) const {
 
     jmethodID rectConstructor = env->GetMethodID(rectClass, "<init>", "(IIII)V");
     if (rectConstructor == nullptr) {
-        LOGE("Failed to find Rect constructor");
+        LOGE(LOG_TAG, "Failed to find Rect constructor");
         env->DeleteLocalRef(javaClass);
         env->DeleteLocalRef(text);
         env->DeleteLocalRef(rectClass);

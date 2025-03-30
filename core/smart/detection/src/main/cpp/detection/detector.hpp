@@ -20,12 +20,11 @@
 
 #include <jni.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <memory>
 
 #include "detection_image.hpp"
 #include "matching_results.hpp"
-#include "ocr_detector.hpp"
 #include "../types/detection_result.hpp"
-#include "../types/ocr_result.hpp"
 #include "../types/scalable_roi.hpp"
 #include "../utils/scaling.hpp"
 
@@ -48,8 +47,8 @@ namespace smartautoclicker {
         /** The region of [screenImage] in which [conditionImage] will be searched. */
         ScalableRoi detectionRoi = ScalableRoi();
         
-        /** OCR detector for text recognition. */
-        OcrDetector ocrDetector = OcrDetector();
+        /** OpenCV matrices for the current screen content. */
+        cv::Mat currentScreenMatrix;
 
         /** The results of the OpenCv template matching. */
         MatchingResults matchingResults = MatchingResults();
@@ -136,51 +135,19 @@ namespace smartautoclicker {
         void detectCondition(JNIEnv *env, jobject conditionImage, int x, int y, int width, int height, int threshold);
         
         /**
-         * Initialize OCR capabilities with the specified language.
+         * Get the current screen content as a ByteBuffer.
+         * This allows other detector implementations to access the screen content.
          * 
-         * @param dataPath path to the tessdata directory.
-         * @param language language to use for OCR (e.g., "eng").
-         * @return true if initialization was successful, false otherwise.
+         * @return pointer to a ByteBuffer containing screen data, or nullptr if not available
          */
-        bool initializeOcr(const std::string& dataPath, const std::string& language);
+        std::shared_ptr<cv::Mat> getScreenContent();
         
         /**
-         * Detect text in the current screen image.
+         * Get the current screen dimensions.
          * 
-         * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-         * @return the OCR result.
+         * @return a Point containing the width (x) and height (y) of the screen
          */
-        OcrResult detectText(float minConfidence = 0.0f);
-        
-        /**
-         * Detect text in a specific region of the current screen image.
-         * 
-         * @param roi region of interest in the screen image.
-         * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-         * @return the OCR result.
-         */
-        OcrResult detectText(const cv::Rect& roi, float minConfidence = 0.0f);
-        
-        /**
-         * Find specific text in the current screen image.
-         * 
-         * @param textToFind the text to search for.
-         * @param exactMatch if true, requires exact text match; if false, searches for textToFind within detected text.
-         * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-         * @return the OCR result.
-         */
-        OcrResult findText(const std::string& textToFind, bool exactMatch = false, float minConfidence = 0.0f);
-        
-        /**
-         * Find specific text in a region of the current screen image.
-         * 
-         * @param textToFind the text to search for.
-         * @param roi region of interest in the screen image.
-         * @param exactMatch if true, requires exact text match; if false, searches for textToFind within detected text.
-         * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-         * @return the OCR result.
-         */
-        OcrResult findText(const std::string& textToFind, const cv::Rect& roi, bool exactMatch = false, float minConfidence = 0.0f);
+        cv::Point getScreenSize();
     };
 }
 

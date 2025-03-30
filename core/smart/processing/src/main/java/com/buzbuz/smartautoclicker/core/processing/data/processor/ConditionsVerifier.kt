@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import android.graphics.Point
 
 import com.buzbuz.smartautoclicker.core.detection.ImageDetector
+import com.buzbuz.smartautoclicker.core.detection.OcrTextDetector
 import com.buzbuz.smartautoclicker.core.domain.model.AND
 import com.buzbuz.smartautoclicker.core.domain.model.ConditionOperator
 import com.buzbuz.smartautoclicker.core.domain.model.CounterOperationValue
@@ -29,6 +30,7 @@ import com.buzbuz.smartautoclicker.core.domain.model.OR
 import com.buzbuz.smartautoclicker.core.domain.model.WHOLE_SCREEN
 import com.buzbuz.smartautoclicker.core.domain.model.condition.Condition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.ImageCondition
+import com.buzbuz.smartautoclicker.core.domain.model.condition.OcrTextCondition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.TriggerCondition
 import com.buzbuz.smartautoclicker.core.processing.data.processor.state.ProcessingState
 import com.buzbuz.smartautoclicker.core.processing.domain.ConditionResult
@@ -39,6 +41,7 @@ import kotlinx.coroutines.yield
 internal class ConditionsVerifier(
     private val state: ProcessingState,
     private val imageDetector: ImageDetector,
+    private val ocrTextDetector: OcrTextDetector,
     private val bitmapSupplier: suspend (ImageCondition) -> Bitmap?,
     private val progressListener: ScenarioProcessingListener? = null,
 ) {
@@ -83,6 +86,7 @@ internal class ConditionsVerifier(
 
     private suspend fun verifyCondition(condition: Condition): ConditionResult =
         when (condition) {
+            is OcrTextCondition -> verifyOcrTextCondition(condition)
             is ImageCondition -> verifyImageCondition(condition)
             is TriggerCondition -> if (verifyTriggerCondition(condition)) POSITIVE_RESULT else NEGATIVE_RESULT
         }
@@ -163,6 +167,62 @@ internal class ConditionsVerifier(
         } ?: NEGATIVE_RESULT
 
         progressListener?.onImageConditionProcessingCompleted(result)
+        return result
+    }
+    
+    private suspend fun verifyOcrTextCondition(condition: OcrTextCondition): ConditionResult {
+        progressListener?.onOcrTextConditionProcessingStarted(condition)
+        
+        // Get current screen size and content from the image detector
+        val screenSize = imageDetector.getScreenSize()
+        val screenContent = imageDetector.getScreenContent()
+        
+        if (screenContent == null) {
+            progressListener?.onConditionVerificationCompleted(condition, false, "No screen content available")
+            return NEGATIVE_RESULT
+        }
+        
+        // We need to convert the byte buffer to a bitmap for the OCR detection
+        val bitmap = android.graphics.Bitmap.createBitmap(
+            screenSize.x, screenSize.y, android.graphics.Bitmap.Config.ARGB_8888
+        )
+        
+        // Copy the buffer content to the bitmap
+        screenContent.rewind()
+        bitmap.copyPixelsFromBuffer(screenContent)
+        
+        // Determine the region of interest based on detection type
+        val roi = when (condition.detectionType) {
+            EXACT -> condition.area
+            WHOLE_SCREEN -> null
+            IN_AREA -> condition.detectionArea
+            else -> throw IllegalArgumentException("Unexpected detection type")
+        }
+        
+        // Perform OCR text detection using our dedicated detector
+        val ocrResult = ocrTextDetector.findText(
+            bitmap = bitmap,
+            textToFind = condition.textToFind,
+            roi = roi,
+            exactMatch = condition.exactTextMatch,
+            minConfidence = condition.minTextConfidence / 100f
+        )
+        
+        // Create our condition result
+        val result = OcrTextResult(
+            isFulfilled = ocrResult.recognized == condition.shouldBeDetected,
+            haveBeenDetected = ocrResult.recognized,
+            condition = condition,
+            detectedText = ocrResult.text,
+            confidenceRate = (ocrResult.confidence * 100).toInt(),
+            boundingBox = ocrResult.boundingBox
+        )
+        
+        // Clean up the bitmap
+        bitmap.recycle()
+        
+        // Report results
+        progressListener?.onOcrTextConditionProcessingCompleted(result)
         return result
     }
 }

@@ -49,6 +49,7 @@ import com.buzbuz.smartautoclicker.core.domain.model.action.toEntity
 import com.buzbuz.smartautoclicker.core.domain.model.action.toggleevent.toEntity
 import com.buzbuz.smartautoclicker.core.domain.model.condition.Condition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.ImageCondition
+import com.buzbuz.smartautoclicker.core.domain.model.condition.OcrTextCondition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.toEntity
 import com.buzbuz.smartautoclicker.core.domain.model.event.toEntity
 import com.buzbuz.smartautoclicker.core.domain.model.scenario.Scenario
@@ -275,6 +276,8 @@ internal class ScenarioDataSource(
             newItems = newConditions,
             mappingClosure = { condition ->
                 when (condition) {
+                    is OcrTextCondition ->
+                        condition.copy(eventId = Identifier(databaseId = eventDbId)).toEntity()
                     is ImageCondition ->
                         condition.copy(eventId = Identifier(databaseId = eventDbId)).toEntity()
                     is TriggerCondition ->

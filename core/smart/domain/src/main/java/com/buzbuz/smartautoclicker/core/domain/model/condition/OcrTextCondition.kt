@@ -52,10 +52,21 @@ data class OcrTextCondition(
     val detectionArea: Rect? = null,
 ) : Condition(), Prioritizable {
 
-    /** @return creates a deep copy of this condition. */
-    fun deepCopy(): OcrTextCondition = copy(
+    /**
+     * Creates a deep copy of this condition.
+     * @return a new instance of OcrTextCondition with the same values but new Rect instances.
+     */
+    fun deepCopy(): OcrTextCondition = OcrTextCondition(
+        id = id,
+        eventId = eventId,
+        name = name,
+        priority = priority,
         textToFind = textToFind,
+        exactTextMatch = exactTextMatch,
+        minTextConfidence = minTextConfidence,
         area = Rect(area),
+        detectionType = detectionType,
+        shouldBeDetected = shouldBeDetected,
         detectionArea = detectionArea?.let { Rect(it) }
     )
 
@@ -63,7 +74,7 @@ data class OcrTextCondition(
     override fun isComplete(): Boolean =
         super.isComplete() && textToFind.isNotEmpty() &&
                 (detectionType == IN_AREA && detectionArea != null || detectionType != IN_AREA)
-
+                
     override fun hashCodeNoIds(): Int =
         name.hashCode() + textToFind.hashCode() + exactTextMatch.hashCode() + minTextConfidence.hashCode() +
                 area.hashCode() + detectionType.hashCode() + shouldBeDetected.hashCode() + 

@@ -53,6 +53,7 @@ import com.buzbuz.smartautoclicker.core.database.serialization.Deserializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import java.util.concurrent.locks.Condition
 
 internal open class CompatDeserializer : Deserializer {
 
@@ -240,6 +241,7 @@ internal open class CompatDeserializer : Deserializer {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     open fun deserializeCondition(jsonCondition: JsonObject): ConditionEntity? =
         when (deserializeConditionType(jsonCondition)) {
+            ConditionType.ON_OCR_TEXT_DETECTED -> deser
             ConditionType.ON_BROADCAST_RECEIVED -> deserializeConditionBroadcastReceived(jsonCondition)
             ConditionType.ON_COUNTER_REACHED -> deserializeConditionCounterReached(jsonCondition)
             ConditionType.ON_IMAGE_DETECTED -> deserializeConditionImageDetected(jsonCondition)

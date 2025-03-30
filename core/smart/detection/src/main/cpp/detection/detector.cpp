@@ -22,6 +22,8 @@
 #include "../utils/scaling.hpp"
 #include "detector.hpp"
 
+#define LOG_TAG "Detector"
+
 
 using namespace smartautoclicker;
 
@@ -144,69 +146,27 @@ double Detector::getColorDiff(const cv::Mat& image, const cv::Mat& condition) {
     return (diff * 100) / (255 * 3);
 }
 
-// OCR implementation methods
+// Screen content access methods for external detectors
 
-bool Detector::initializeOcr(const std::string& dataPath, const std::string& language) {
-    LOGI("Initializing OCR with language: %s", language.c_str());
-    return ocrDetector.initialize(dataPath, language);
-}
-
-OcrResult Detector::detectText(float minConfidence) {
-    if (!screenImage.isValid()) {
-        LOGW("Screen image not set before OCR detection");
-        return OcrResult();
+std::shared_ptr<cv::Mat> Detector::getScreenContent() {
+    // Check if the screen image has valid content by testing if dimensions are greater than 0
+    if (screenImage.fullSizeColor->empty() || screenImage.fullSizeColor->cols <= 0 || screenImage.fullSizeColor->rows <= 0) {
+        LOGW(LOG_TAG, "Screen image not set before getting content");
+        return nullptr;
     }
     
-    // Get the original screen image for OCR
-    cv::Mat screenMat = screenImage.getColorImage();
-    return ocrDetector.detectText(screenMat, cv::Rect(), minConfidence);
+    // Return a shared pointer to a copy of the current screen image
+    return std::make_shared<cv::Mat>(*screenImage.fullSizeColor);
 }
 
-OcrResult Detector::detectText(const cv::Rect& roi, float minConfidence) {
-    if (!screenImage.isValid()) {
-        LOGW("Screen image not set before OCR detection");
-        return OcrResult();
+cv::Point Detector::getScreenSize() {
+    // Check if the screen image has valid content by testing if dimensions are greater than 0
+    if (screenImage.fullSizeColor->empty() || screenImage.fullSizeColor->cols <= 0 || screenImage.fullSizeColor->rows <= 0) {
+        LOGW(LOG_TAG, "Screen image not set before getting dimensions");
+        return cv::Point(0, 0);
     }
     
-    // Calculate the actual ROI based on the current scale ratio
-    double scaleRatio = scaleRatioManager.getScaleRatio();
-    cv::Rect scaledRoi;
-    scaledRoi.x = static_cast<int>(roi.x * scaleRatio);
-    scaledRoi.y = static_cast<int>(roi.y * scaleRatio);
-    scaledRoi.width = static_cast<int>(roi.width * scaleRatio);
-    scaledRoi.height = static_cast<int>(roi.height * scaleRatio);
-    
-    // Get the original screen image for OCR
-    cv::Mat screenMat = screenImage.getColorImage();
-    return ocrDetector.detectText(screenMat, scaledRoi, minConfidence);
-}
-
-OcrResult Detector::findText(const std::string& textToFind, bool exactMatch, float minConfidence) {
-    if (!screenImage.isValid()) {
-        LOGW("Screen image not set before OCR text search");
-        return OcrResult();
-    }
-    
-    // Get the original screen image for OCR
-    cv::Mat screenMat = screenImage.getColorImage();
-    return ocrDetector.findText(screenMat, textToFind, cv::Rect(), exactMatch, minConfidence);
-}
-
-OcrResult Detector::findText(const std::string& textToFind, const cv::Rect& roi, bool exactMatch, float minConfidence) {
-    if (!screenImage.isValid()) {
-        LOGW("Screen image not set before OCR text search");
-        return OcrResult();
-    }
-    
-    // Calculate the actual ROI based on the current scale ratio
-    double scaleRatio = scaleRatioManager.getScaleRatio();
-    cv::Rect scaledRoi;
-    scaledRoi.x = static_cast<int>(roi.x * scaleRatio);
-    scaledRoi.y = static_cast<int>(roi.y * scaleRatio);
-    scaledRoi.width = static_cast<int>(roi.width * scaleRatio);
-    scaledRoi.height = static_cast<int>(roi.height * scaleRatio);
-    
-    // Get the original screen image for OCR
-    cv::Mat screenMat = screenImage.getColorImage();
-    return ocrDetector.findText(screenMat, textToFind, scaledRoi, exactMatch, minConfidence);
+    // Get the full-size dimensions (not scaled)
+    auto dimensions = screenImage.fullSizeColor->size();
+    return cv::Point(dimensions.width, dimensions.height);
 }

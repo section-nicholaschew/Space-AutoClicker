@@ -19,6 +19,8 @@
 #include "../utils/log.h"
 
 #include <opencv2/imgproc.hpp>
+
+#define LOG_TAG "OcrDetector"
 #include <algorithm>
 
 using namespace smartautoclicker;
@@ -51,7 +53,7 @@ bool OcrDetector::initialize(const std::string& dataPath, const std::string& lan
     }
     return false;
 #else
-    LOGW("OCR is not enabled in this build");
+    LOGW(LOG_TAG, "OCR is not enabled in this build");
     return false;
 #endif
 }
@@ -110,7 +112,7 @@ OcrResult OcrDetector::detectText(const cv::Mat& image, const cv::Rect& roi, flo
     
     return OcrResult(recognized, detectedText, confidence * 100.0f, boundingBox); // Convert back to 0-100 range
 #else
-    LOGW("OCR is not enabled in this build");
+    LOGW(LOG_TAG, "OCR is not enabled in this build");
     return OcrResult();
 #endif
 }
@@ -145,7 +147,7 @@ OcrResult OcrDetector::findText(const cv::Mat& image, const std::string& textToF
     // Return the result with updated recognition status
     return OcrResult(textFound, detectedText, result.getConfidence(), result.getBoundingBox());
 #else
-    LOGW("OCR is not enabled in this build");
+    LOGW(LOG_TAG, "OCR is not enabled in this build");
     return OcrResult();
 #endif
 }

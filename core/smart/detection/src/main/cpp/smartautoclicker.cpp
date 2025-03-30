@@ -81,95 +81,45 @@ extern "C" {
         delete detector;
     }
 
-    // OCR related functions
-    JNIEXPORT jboolean JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_initializeOcr(
+    // Screen content access for external detectors
+    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_getScreenByteBuffer(
             JNIEnv *env,
-            jobject self,
-            jstring dataPath,
-            jstring language) {
+            jobject self) {
 
         auto detector = getObject(env, self);
         
-        // Convert jstring to std::string
-        const char *dataPathChars = env->GetStringUTFChars(dataPath, nullptr);
-        const char *languageChars = env->GetStringUTFChars(language, nullptr);
+        // Get the current screen content as ByteBuffer
+        auto screenBuffer = detector->getScreenContent();
+        if (!screenBuffer) {
+            return nullptr;
+        }
         
-        std::string dataPathStr(dataPathChars);
-        std::string languageStr(languageChars);
+        // Create a direct ByteBuffer that references the native memory
+        // This allows efficient access from Java without copying the data
+        // Calculate total buffer size (rows * cols * channels)
+        int bufferSize = screenBuffer->rows * screenBuffer->cols * screenBuffer->channels();
         
-        // Release the string resources
-        env->ReleaseStringUTFChars(dataPath, dataPathChars);
-        env->ReleaseStringUTFChars(language, languageChars);
+        // Get pointer to the raw data
+        uchar* dataPtr = screenBuffer->data;
+        jobject byteBuffer = env->NewDirectByteBuffer(dataPtr, bufferSize);
         
-        // Initialize OCR with the provided parameters
-        bool result = detector->initializeOcr(dataPathStr, languageStr);
-        
-        return static_cast<jboolean>(result);
+        return byteBuffer;
     }
 
-    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_detectTextFull(
+    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_getScreenDimensions(
             JNIEnv *env,
-            jobject self,
-            jfloat minConfidence) {
-
-        auto detector = getObject(env, self);
-        auto result = detector->detectText(minConfidence);
-        return result.toJavaObject(env);
-    }
-
-    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_detectTextAt(
-            JNIEnv *env,
-            jobject self,
-            jint x,
-            jint y,
-            jint width,
-            jint height,
-            jfloat minConfidence) {
-
-        auto detector = getObject(env, self);
-        cv::Rect roi(x, y, width, height);
-        auto result = detector->detectText(roi, minConfidence);
-        return result.toJavaObject(env);
-    }
-
-    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_findTextFull(
-            JNIEnv *env,
-            jobject self,
-            jstring textToFind,
-            jboolean exactMatch,
-            jfloat minConfidence) {
+            jobject self) {
 
         auto detector = getObject(env, self);
         
-        // Convert jstring to std::string
-        const char *textChars = env->GetStringUTFChars(textToFind, nullptr);
-        std::string textStr(textChars);
-        env->ReleaseStringUTFChars(textToFind, textChars);
+        // Get the current screen dimensions
+        auto dimensions = detector->getScreenSize();
         
-        auto result = detector->findText(textStr, static_cast<bool>(exactMatch), minConfidence);
-        return result.toJavaObject(env);
-    }
-
-    JNIEXPORT jobject JNICALL Java_com_buzbuz_smartautoclicker_core_detection_NativeDetector_findTextAt(
-            JNIEnv *env,
-            jobject self,
-            jstring textToFind,
-            jint x,
-            jint y,
-            jint width,
-            jint height,
-            jboolean exactMatch,
-            jfloat minConfidence) {
-
-        auto detector = getObject(env, self);
+        // Create a Point object in Java
+        jclass pointClass = env->FindClass("android/graphics/Point");
+        jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(II)V");
         
-        // Convert jstring to std::string
-        const char *textChars = env->GetStringUTFChars(textToFind, nullptr);
-        std::string textStr(textChars);
-        env->ReleaseStringUTFChars(textToFind, textChars);
-        
-        cv::Rect roi(x, y, width, height);
-        auto result = detector->findText(textStr, roi, static_cast<bool>(exactMatch), minConfidence);
-        return result.toJavaObject(env);
+        // Create the Point object with the screen dimensions
+        return env->NewObject(pointClass, constructor, dimensions.x, dimensions.y);
     }
 }

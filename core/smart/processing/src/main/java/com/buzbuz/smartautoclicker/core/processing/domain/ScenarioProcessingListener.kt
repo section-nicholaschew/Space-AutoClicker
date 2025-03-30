@@ -19,6 +19,7 @@ package com.buzbuz.smartautoclicker.core.processing.domain
 import android.content.Context
 
 import com.buzbuz.smartautoclicker.core.domain.model.condition.ImageCondition
+import com.buzbuz.smartautoclicker.core.domain.model.condition.OcrTextCondition
 import com.buzbuz.smartautoclicker.core.domain.model.event.ImageEvent
 import com.buzbuz.smartautoclicker.core.domain.model.event.TriggerEvent
 import com.buzbuz.smartautoclicker.core.domain.model.scenario.Scenario
@@ -42,6 +43,10 @@ interface ScenarioProcessingListener {
     suspend fun onImageConditionProcessingStarted(condition: ImageCondition) = Unit
     suspend fun onImageConditionProcessingCompleted(result: ConditionResult) = Unit
     suspend fun onImageConditionProcessingCancelled() = Unit
+
+    suspend fun onOcrTextConditionProcessingStarted(condition: OcrTextCondition) = Unit
+    suspend fun onOcrTextConditionProcessingCompleted(result: ConditionResult) = Unit
+    suspend fun onOcrTextConditionProcessingCancelled() = Unit
 
     suspend fun onImageEventProcessingCompleted(event: ImageEvent, results: IConditionsResult) = Unit
     suspend fun onImageEventProcessingCancelled() = Unit

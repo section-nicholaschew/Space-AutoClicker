@@ -21,7 +21,9 @@ import com.buzbuz.smartautoclicker.core.domain.model.AND
 import com.buzbuz.smartautoclicker.core.domain.model.action.Action
 import com.buzbuz.smartautoclicker.core.domain.model.action.Pause
 import com.buzbuz.smartautoclicker.core.domain.model.action.ToggleEvent
+import com.buzbuz.smartautoclicker.core.domain.model.condition.Condition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.ImageCondition
+import com.buzbuz.smartautoclicker.core.domain.model.condition.OcrTextCondition
 import com.buzbuz.smartautoclicker.core.domain.model.condition.TriggerCondition
 import com.buzbuz.smartautoclicker.core.domain.model.event.ImageEvent
 import com.buzbuz.smartautoclicker.core.domain.model.event.TriggerEvent
@@ -61,7 +63,7 @@ internal class ImageConditionTry(
             conditionOperator = AND,
             enabledOnStart = true,
             priority = 0,
-            conditions = listOf(condition.copy(eventId = tryEventId)),
+            conditions = listOf(condition.deepCopy().apply { eventId = tryEventId }),
             actions = listOf(getTestPauseAction(tryEventId)),
             keepDetecting = false,
         )
@@ -74,6 +76,47 @@ internal class ImageConditionTry(
             name = "Test Pause",
             pauseDuration = 500L,
             priority = 0,
+        )
+}
+
+
+
+internal class OcrTextConditionTry(
+    override val scenario: Scenario,
+    val condition: OcrTextCondition,
+) : ScenarioTry() {
+
+    // We use OcrTextCondition in an ImageEvent for test purposes
+    override val imageEvents: List<ImageEvent> = listOf(getTestImageEvent())
+    override val triggerEvents: List<TriggerEvent> = emptyList()
+    
+    private fun getTestImageEvent(): ImageEvent {
+        val tryEventId = Identifier(databaseId = 1L)
+        return ImageEvent(
+            id = tryEventId,
+            scenarioId = scenario.id,
+            name = "OCR Test Event",
+            conditionOperator = AND,
+            enabledOnStart = true,
+            priority = 0,
+            conditions = listOf(condition.deepCopy().apply { 
+                // Update the eventId to the test event ID
+                val field = OcrTextCondition::class.java.getDeclaredField("eventId")
+                field.isAccessible = true
+                field.set(this, tryEventId)
+            }),
+            actions = listOf(getTestPauseAction(tryEventId)),
+            keepDetecting = false,
+        )
+    }
+
+    private fun getTestPauseAction(eventId: Identifier): Pause =
+        Pause(
+            id = Identifier(databaseId = 2L),
+            eventId = eventId,
+            name = "Test Pause",
+            priority = 0,
+            pauseDuration = 200,
         )
 }
 
