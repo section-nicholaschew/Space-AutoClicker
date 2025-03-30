@@ -48,12 +48,23 @@ android {
         viewBinding = true
         buildConfig = true
     }
-
+    
     defaultConfig {
         applicationId = getExtraActualApplicationId()
 
         versionCode = 64
         versionName = "3.3.0-beta03"
+    }
+    
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
     }
 
     flavorDimensions += listOf("version")

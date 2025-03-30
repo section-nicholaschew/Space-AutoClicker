@@ -26,6 +26,16 @@
 -keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
 -keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
 
+# Keep Android components
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+
+# Specifically keep the ScenarioActivity from being renamed or obfuscated
+-keep class com.buzbuz.smartautoclicker.scenarios.ScenarioActivity { *; }
+-keep class com.buzbuz.smartautoclicker.SmartAutoClickerService { *; }
+
 # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
