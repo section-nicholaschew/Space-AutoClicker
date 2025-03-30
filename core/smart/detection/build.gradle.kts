@@ -31,6 +31,24 @@ sourceDownload {
             unzipPath = File("src/release/opencv")
             requiredForTask = "configureCMakeRelease"
         }
+        
+        register("tesseract") {
+            projectAccount = "tesseract-ocr"
+            projectName = "tesseract"
+            projectVersion = "5.3.0"
+            
+            unzipPath = File("src/release/tesseract")
+            requiredForTask = "configureCMakeRelease"
+        }
+        
+        register("leptonica") {
+            projectAccount = "DanBloomberg"
+            projectName = "leptonica"
+            projectVersion = "1.83.0"
+            
+            unzipPath = File("src/release/leptonica")
+            requiredForTask = "configureCMakeRelease"
+        }
     }
 }
 
@@ -40,8 +58,17 @@ android {
     defaultConfig {
         externalNativeBuild {
             cmake {
-
+                // Enable OCR support with Tesseract
+                arguments("-DENABLE_OCR=ON")
             }
+        }
+        
+        // Tesseract needs to keep all native method names
+        ndk {
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("arm64-v8a")
+            abiFilters.add("x86")
+            abiFilters.add("x86_64")
         }
     }
 
@@ -120,4 +147,9 @@ android {
 
 dependencies {
     implementation(libs.androidx.annotation)
+    implementation(libs.androidx.core.ktx.v1120)
+    implementation(libs.kotlinx.coroutines.android)
+    
+    // Tesseract OCR dependencies
+    implementation(libs.tess.two)
 }

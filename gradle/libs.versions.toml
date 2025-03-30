@@ -5,6 +5,7 @@ androidCompileSdk = "35"
 androidMinSdk = "24"
 
 # Build script
+coreKtx = "1.12.0"
 googleFirebaseCrashlyticsGradle = "3.0.3"
 googleServices = "4.4.2"
 androidGradlePlugin = "8.7.3"
@@ -54,12 +55,14 @@ mockitoKotlin = "5.1.0"
 mockk = "1.13.10"
 robolectric = "4.11.1"
 espressoCore = "3.6.1"
+tessTwo = "9.1.0"
 
 
 [libraries]
 
 # Plugin dependencies for build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+androidx-core-ktx-v1120 = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 androidx-room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "androidxRoom" }
 google-firebase-crashlytics-gradlePlugin = { group = "com.google.firebase.crashlytics", name = "com.google.firebase.crashlytics.gradle.plugin", version.ref = "googleFirebaseCrashlyticsGradle" }
@@ -69,6 +72,7 @@ google-gms-gradlePlugin = { group = "com.google.gms.google-services", name = "co
 # Dependencies used in build-logic. Might seem unused but check in files if that is the case
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
@@ -122,6 +126,7 @@ androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testin
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "androidxRoom" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+tess-two = { module = "com.rmtheis:tess-two", version.ref = "tessTwo" }
 
 
 [plugins]

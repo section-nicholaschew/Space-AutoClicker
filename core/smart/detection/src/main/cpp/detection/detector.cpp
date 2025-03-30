@@ -16,6 +16,7 @@
  */
 
 #include <opencv2/imgproc/imgproc_c.h>
+#include <android/asset_manager.h>
 
 #include "../utils/log.h"
 #include "../utils/scaling.hpp"
@@ -141,4 +142,71 @@ double Detector::getColorDiff(const cv::Mat& image, const cv::Mat& condition) {
         diff += abs(imageColorMeans.val[i] - conditionColorMeans.val[i]);
     }
     return (diff * 100) / (255 * 3);
+}
+
+// OCR implementation methods
+
+bool Detector::initializeOcr(const std::string& dataPath, const std::string& language) {
+    LOGI("Initializing OCR with language: %s", language.c_str());
+    return ocrDetector.initialize(dataPath, language);
+}
+
+OcrResult Detector::detectText(float minConfidence) {
+    if (!screenImage.isValid()) {
+        LOGW("Screen image not set before OCR detection");
+        return OcrResult();
+    }
+    
+    // Get the original screen image for OCR
+    cv::Mat screenMat = screenImage.getColorImage();
+    return ocrDetector.detectText(screenMat, cv::Rect(), minConfidence);
+}
+
+OcrResult Detector::detectText(const cv::Rect& roi, float minConfidence) {
+    if (!screenImage.isValid()) {
+        LOGW("Screen image not set before OCR detection");
+        return OcrResult();
+    }
+    
+    // Calculate the actual ROI based on the current scale ratio
+    double scaleRatio = scaleRatioManager.getScaleRatio();
+    cv::Rect scaledRoi;
+    scaledRoi.x = static_cast<int>(roi.x * scaleRatio);
+    scaledRoi.y = static_cast<int>(roi.y * scaleRatio);
+    scaledRoi.width = static_cast<int>(roi.width * scaleRatio);
+    scaledRoi.height = static_cast<int>(roi.height * scaleRatio);
+    
+    // Get the original screen image for OCR
+    cv::Mat screenMat = screenImage.getColorImage();
+    return ocrDetector.detectText(screenMat, scaledRoi, minConfidence);
+}
+
+OcrResult Detector::findText(const std::string& textToFind, bool exactMatch, float minConfidence) {
+    if (!screenImage.isValid()) {
+        LOGW("Screen image not set before OCR text search");
+        return OcrResult();
+    }
+    
+    // Get the original screen image for OCR
+    cv::Mat screenMat = screenImage.getColorImage();
+    return ocrDetector.findText(screenMat, textToFind, cv::Rect(), exactMatch, minConfidence);
+}
+
+OcrResult Detector::findText(const std::string& textToFind, const cv::Rect& roi, bool exactMatch, float minConfidence) {
+    if (!screenImage.isValid()) {
+        LOGW("Screen image not set before OCR text search");
+        return OcrResult();
+    }
+    
+    // Calculate the actual ROI based on the current scale ratio
+    double scaleRatio = scaleRatioManager.getScaleRatio();
+    cv::Rect scaledRoi;
+    scaledRoi.x = static_cast<int>(roi.x * scaleRatio);
+    scaledRoi.y = static_cast<int>(roi.y * scaleRatio);
+    scaledRoi.width = static_cast<int>(roi.width * scaleRatio);
+    scaledRoi.height = static_cast<int>(roi.height * scaleRatio);
+    
+    // Get the original screen image for OCR
+    cv::Mat screenMat = screenImage.getColorImage();
+    return ocrDetector.findText(screenMat, textToFind, scaledRoi, exactMatch, minConfidence);
 }

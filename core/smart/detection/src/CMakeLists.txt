@@ -38,10 +38,14 @@ add_library( # Sets the name of the library.
         main/cpp/detection/detector.hpp
         main/cpp/detection/matching_results.cpp
         main/cpp/detection/matching_results.hpp
+        main/cpp/detection/ocr_detector.cpp
+        main/cpp/detection/ocr_detector.hpp
         main/cpp/types/detection_result.cpp
         main/cpp/types/detection_result.hpp
         main/cpp/types/scalable_roi.cpp
         main/cpp/types/scalable_roi.hpp
+        main/cpp/types/ocr_result.cpp
+        main/cpp/types/ocr_result.hpp
         main/cpp/utils/log.cpp
         main/cpp/utils/log.h
         main/cpp/utils/scaling.cpp
@@ -100,7 +104,70 @@ ELSEIF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/release/opencv")
     include_directories (${CMAKE_BINARY_DIR})
 ENDIF()
 
+# Tesseract and Leptonica configurations for OCR
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    # For debug builds, we'll use prebuilt binaries if available
+    set(PREBUILT_TESSERACT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/debug/tesseract")
+    set(PREBUILT_LEPTONICA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/debug/leptonica")
+    
+    # Add Tesseract if available
+    if(EXISTS "${PREBUILT_TESSERACT_PATH}")
+        add_library(tesseract SHARED IMPORTED)
+        set_target_properties(
+                tesseract
+                PROPERTIES IMPORTED_LOCATION
+                "${PREBUILT_TESSERACT_PATH}/libs/${ANDROID_ABI}/libtesseract.so")
+        
+        target_include_directories(
+                smartautoclicker
+                PUBLIC
+                ${PREBUILT_TESSERACT_PATH}/include)
+    endif()
+    
+    # Add Leptonica if available
+    if(EXISTS "${PREBUILT_LEPTONICA_PATH}")
+        add_library(leptonica SHARED IMPORTED)
+        set_target_properties(
+                leptonica
+                PROPERTIES IMPORTED_LOCATION
+                "${PREBUILT_LEPTONICA_PATH}/libs/${ANDROID_ABI}/libleptonica.so")
+        
+        target_include_directories(
+                smartautoclicker
+                PUBLIC
+                ${PREBUILT_LEPTONICA_PATH}/include)
+    endif()
+    
+ELSEIF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/release/tesseract" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/release/leptonica")
+    set(SOURCE_TESSERACT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/release/tesseract")
+    set(SOURCE_LEPTONICA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/release/leptonica")
+    
+    # First build Leptonica which is a dependency of Tesseract
+    add_subdirectory(${SOURCE_LEPTONICA_PATH} ${CMAKE_BINARY_DIR}/leptonica)
+    
+    # Enable only what we need in Tesseract to reduce build time
+    set(DISABLE_CURL ON CACHE BOOL "")
+    set(DISABLE_ARCHIVE ON CACHE BOOL "")
+    set(GRAPHICS_DISABLED ON CACHE BOOL "")
+    set(DISABLED_LEGACY_ENGINE ON CACHE BOOL "")
+    set(BUILD_TRAINING_TOOLS OFF CACHE BOOL "")
+    
+    # Now build Tesseract
+    add_subdirectory(${SOURCE_TESSERACT_PATH} ${CMAKE_BINARY_DIR}/tesseract)
+    
+    target_include_directories(smartautoclicker PUBLIC
+            ${SOURCE_TESSERACT_PATH}/include
+            ${SOURCE_LEPTONICA_PATH}/src)
+            
+ENDIF()
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
-target_link_libraries(smartautoclicker opencv_core opencv_imgproc -ljnigraphics ${log-lib} )
+target_link_libraries(smartautoclicker opencv_core opencv_imgproc -ljnigraphics ${log-lib})
+
+# Link Tesseract and Leptonica if available
+if(TARGET tesseract AND TARGET leptonica)
+    target_link_libraries(smartautoclicker tesseract leptonica)
+    target_compile_definitions(smartautoclicker PRIVATE ENABLE_OCR=1)
+endif()
