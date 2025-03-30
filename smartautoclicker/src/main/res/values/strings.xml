@@ -128,6 +128,16 @@
     <string name="field_legacy_action_ui_title">Legacy Action UI</string>
     <string name="field_legacy_action_ui_desc">Change the action display by a list. Useful for complex scenarios.</string>
 
+    <!-- LLM Scenario Creation -->
+    <string name="item_title_llm_scenario">AI Generated</string>
+    <string name="item_desc_llm_scenario">Create a scenario using AI. Describe what you want to automate and let AI generate the scenario for you.</string>
+    <string name="llm_scenario_button_description">Create a scenario using AI</string>
+    <string name="llm_scenario_title">AI Scenario Creation</string>
+    <string name="llm_scenario_description">Describe what you want to automate, and the AI will generate a scenario for you. Be specific about what actions should be performed and what conditions should trigger them.</string>
+    <string name="llm_scenario_prompt_hint">Describe your automation needs…</string>
+    <string name="llm_scenario_generate_button">Generate Scenario</string>
+    <string name="llm_scenario_created_message">Scenario created successfully! You can now find it in your scenarios list.</string>
+
     <string name="field_legacy_notification_ui_title">Legacy Notification UI</string>
     <string name="field_legacy_notification_ui_desc">Use the system buttons instead of icon buttons in the notification.</string>
 

@@ -17,6 +17,7 @@
 package com.buzbuz.smartautoclicker.scenarios.creation
 
 import android.content.Context
+import android.content.Intent
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -66,9 +67,11 @@ class ScenarioCreationViewModel @Inject constructor(
             ScenarioTypeSelectionState(
                 dumbItem = ScenarioTypeItem.Dumb,
                 smartItem = ScenarioTypeItem.Smart,
+                llmItem = ScenarioTypeItem.Llm,
                 selectedItem = selectedType,
                 showPaidLimitationWarning =
-                    billingState == UserBillingState.PURCHASED && selectedType == ScenarioTypeSelection.SMART
+                    billingState == UserBillingState.PURCHASED && 
+                    (selectedType == ScenarioTypeSelection.SMART || selectedType == ScenarioTypeSelection.LLM)
             )
         }
 
@@ -96,9 +99,18 @@ class ScenarioCreationViewModel @Inject constructor(
             when (_selectedType.value) {
                 ScenarioTypeSelection.DUMB -> createDumbScenario()
                 ScenarioTypeSelection.SMART -> createSmartScenario(context)
+                ScenarioTypeSelection.LLM -> startLlmScenarioCreation(context)
             }
             _creationState.value = CreationState.SAVED
         }
+    }
+    
+    private fun startLlmScenarioCreation(context: Context) {
+        // Launch the LLM scenario creation activity
+        val intent = Intent(context, LlmScenarioCreationActivity::class.java).apply {
+            putExtra(LlmScenarioCreationActivity.EXTRA_SCENARIO_NAME, _name.value)
+        }
+        context.startActivity(intent)
     }
 
     private suspend fun createDumbScenario() {
@@ -134,6 +146,7 @@ class ScenarioCreationViewModel @Inject constructor(
 data class ScenarioTypeSelectionState(
     val dumbItem: ScenarioTypeItem.Dumb,
     val smartItem: ScenarioTypeItem.Smart,
+    val llmItem: ScenarioTypeItem.Llm,
     val selectedItem: ScenarioTypeSelection,
     val showPaidLimitationWarning: Boolean,
 )
@@ -151,10 +164,17 @@ sealed class ScenarioTypeItem(val titleRes: Int, val iconRes: Int, val descripti
         iconRes = R.drawable.ic_smart,
         descriptionText = R.string.item_desc_smart_scenario,
     )
+    
+    data object Llm: ScenarioTypeItem(
+        titleRes = R.string.item_title_llm_scenario,
+        iconRes = R.drawable.ic_ai_brain,
+        descriptionText = R.string.item_desc_llm_scenario,
+    )
 }
 enum class ScenarioTypeSelection {
     DUMB,
     SMART,
+    LLM,
 }
 
 enum class CreationState {

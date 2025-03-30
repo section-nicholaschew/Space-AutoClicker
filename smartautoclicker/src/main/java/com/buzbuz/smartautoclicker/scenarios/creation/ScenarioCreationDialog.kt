@@ -82,6 +82,7 @@ class ScenarioCreationDialog : DialogFragment() {
             scenarioNameInputLayout.initScenarioNameField()
             scenarioTypeDumb.initScenarioTypeCard(ScenarioTypeSelection.DUMB)
             scenarioTypeSmart.initScenarioTypeCard(ScenarioTypeSelection.SMART)
+            scenarioTypeLlm.initScenarioTypeCard(ScenarioTypeSelection.LLM)
         }
 
         return createDialog(viewBinding.root)
@@ -134,6 +135,10 @@ class ScenarioCreationDialog : DialogFragment() {
                 titleScenarioType.setText(R.string.item_title_smart_scenario)
                 imageScenarioType.setImageResource(R.drawable.ic_smart)
             }
+            ScenarioTypeSelection.LLM->{
+                titleScenarioType.setText(R.string.item_title_llm_scenario)
+                imageScenarioType.setImageResource(R.drawable.ic_ai_brain)
+            }
         }
 
         root.setOnClickListener { viewModel.setSelectedType(type) }
@@ -147,6 +152,7 @@ class ScenarioCreationDialog : DialogFragment() {
         viewBinding.apply {
             scenarioTypeDumb.setState(state.dumbItem, state.selectedItem, ScenarioTypeSelection.DUMB)
             scenarioTypeSmart.setState(state.smartItem, state.selectedItem, ScenarioTypeSelection.SMART)
+            scenarioTypeLlm.setState(state.llmItem, state.selectedItem, ScenarioTypeSelection.LLM)
 
             when (state.selectedItem) {
                 ScenarioTypeSelection.DUMB -> {
@@ -155,6 +161,11 @@ class ScenarioCreationDialog : DialogFragment() {
                 }
                 ScenarioTypeSelection.SMART -> {
                     scenarioTypeDescription.setText(state.smartItem.descriptionText)
+                    scenarioTypeDescriptionNotPurchased.visibility =
+                        if (state.showPaidLimitationWarning) View.VISIBLE else View.GONE
+                }
+                ScenarioTypeSelection.LLM -> {
+                    scenarioTypeDescription.setText(state.llmItem.descriptionText)
                     scenarioTypeDescriptionNotPurchased.visibility =
                         if (state.showPaidLimitationWarning) View.VISIBLE else View.GONE
                 }

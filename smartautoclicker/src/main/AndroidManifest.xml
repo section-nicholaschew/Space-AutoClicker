@@ -47,6 +47,14 @@
         <activity
             android:name="com.buzbuz.smartautoclicker.settings.SettingsActivity"
             android:exported="false" />
+            
+        <activity
+            android:name="com.buzbuz.smartautoclicker.feature.tutorial.ui.TutorialActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name="com.buzbuz.smartautoclicker.scenarios.creation.LlmScenarioCreationActivity"
+            android:exported="false" />
 
         <service
             android:name="${smartAutoClickerService}"
