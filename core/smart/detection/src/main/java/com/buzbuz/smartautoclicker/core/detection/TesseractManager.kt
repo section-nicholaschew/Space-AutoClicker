@@ -71,14 +71,16 @@ class TesseractManager private constructor(context: Context) {
         get() = File(appContext.filesDir, TESSDATA_DIR).apply { mkdirs() }
     
     /**
-     * Initialize Tesseract OCR with the specified language.
+     * Initialize the tessdata directory with the specified language data.
      * If the language data files are not present, they will be extracted from assets.
      * 
-     * @param detector the ImageDetector to initialize with OCR
+     * Note: This method doesn't directly initialize OCR anymore as we're using ML Kit.
+     * It just makes sure the required language data files are available.
+     * 
      * @param language the language to use (e.g., "eng" for English)
      * @return true if initialization was successful, false otherwise
      */
-    suspend fun initOcr(detector: ImageDetector, language: String = DEFAULT_LANGUAGE): Boolean = withContext(Dispatchers.IO) {
+    suspend fun prepareLanguageData(language: String = DEFAULT_LANGUAGE): Boolean = withContext(Dispatchers.IO) {
         try {
             // Check if the tessdata directory and language file exist
             val languageFile = File(tessDataDir, "$language.traineddata")
@@ -91,10 +93,10 @@ class TesseractManager private constructor(context: Context) {
                 }
             }
             
-            Log.d(TAG, "Initializing OCR with language: $language")
-            return@withContext detector.initOcr(tessDataDir.absolutePath, language)
+            Log.d(TAG, "Language data prepared for: $language")
+            return@withContext true
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing OCR", e)
+            Log.e(TAG, "Error preparing language data", e)
             return@withContext false
         }
     }

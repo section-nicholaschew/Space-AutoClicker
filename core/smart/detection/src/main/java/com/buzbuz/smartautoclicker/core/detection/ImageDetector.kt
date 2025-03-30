@@ -17,11 +17,12 @@
 package com.buzbuz.smartautoclicker.core.detection
 
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.Rect
+import java.nio.ByteBuffer
 
 /**
  * Detects bitmaps within other bitmaps for conditions detection on the screen.
- * Also provides OCR (Optical Character Recognition) capabilities for text detection.
  * All calls should be made on the same thread.
  */
 interface ImageDetector : AutoCloseable {
@@ -73,34 +74,19 @@ interface ImageDetector : AutoCloseable {
     fun detectCondition(conditionBitmap: Bitmap, position: Rect, threshold: Int): DetectionResult
     
     /**
-     * Initialize OCR capabilities with a specific language.
-     * @param dataPath the path to the tessdata directory containing language data files.
-     * @param language the language to use for OCR detection (e.g., "eng" for English).
-     * @return true if OCR was initialized successfully, false otherwise.
+     * Get the current screen content as a ByteBuffer.
+     * This is useful for other detection systems to access the screen content.
+     * 
+     * @return the current screen content as a ByteBuffer, or null if not available
      */
-    fun initOcr(dataPath: String, language: String): Boolean
+    fun getScreenContent(): ByteBuffer?
     
     /**
-     * Detect text in the current screen bitmap.
-     * [setupDetection] must have been called first with the content of the screen.
-     *
-     * @param roi optional region of interest to limit text detection area.
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result.
+     * Get the current screen dimensions.
+     * 
+     * @return a Point containing the width (x) and height (y) of the screen
      */
-    fun detectText(roi: Rect? = null, minConfidence: Float = 0f): OcrResult
-    
-    /**
-     * Find specific text in the current screen bitmap.
-     * [setupDetection] must have been called first with the content of the screen.
-     *
-     * @param textToFind the text to search for.
-     * @param roi optional region of interest to limit text detection area.
-     * @param exactMatch if true, requires exact text match; if false, searches for textToFind within detected text.
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result. isRecognized() will be true if the text was found.
-     */
-    fun findText(textToFind: String, roi: Rect? = null, exactMatch: Boolean = false, minConfidence: Float = 0f): OcrResult
+    fun getScreenSize(): android.graphics.Point
 }
 
 /** The minimum detection quality for the algorithm. */

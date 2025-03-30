@@ -17,8 +17,10 @@
 package com.buzbuz.smartautoclicker.core.detection
 
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.Rect
 import androidx.annotation.Keep
+import java.nio.ByteBuffer
 
 /**
  * Native implementation of the image detector.
@@ -91,30 +93,14 @@ class NativeDetector private constructor() : ImageDetector {
         return detectionResult.copy()
     }
     
-    override fun initOcr(dataPath: String, language: String): Boolean {
-        if (isClosed) return false
-        
-        return initializeOcr(dataPath, language)
+    override fun getScreenContent(): ByteBuffer? {
+        if (isClosed) return null
+        return getScreenByteBuffer()
     }
     
-    override fun detectText(roi: Rect?, minConfidence: Float): OcrResult {
-        if (isClosed) return OcrResult(false, "", 0f, Rect())
-        
-        return if (roi != null) {
-            detectTextAt(roi.left, roi.top, roi.width(), roi.height(), minConfidence)
-        } else {
-            detectTextFull(minConfidence)
-        }
-    }
-    
-    override fun findText(textToFind: String, roi: Rect?, exactMatch: Boolean, minConfidence: Float): OcrResult {
-        if (isClosed) return OcrResult(false, "", 0f, Rect())
-        
-        return if (roi != null) {
-            findTextAt(textToFind, roi.left, roi.top, roi.width(), roi.height(), exactMatch, minConfidence)
-        } else {
-            findTextFull(textToFind, exactMatch, minConfidence)
-        }
+    override fun getScreenSize(): Point {
+        if (isClosed) return Point(0, 0)
+        return getScreenDimensions()
     }
 
     /**
@@ -176,73 +162,16 @@ class NativeDetector private constructor() : ImageDetector {
     )
     
     /**
-     * Native method for initializing OCR capabilities with a specific language.
+     * Native method for getting the current screen content as a ByteBuffer.
      * 
-     * @param dataPath the path to the tessdata directory containing language data files.
-     * @param language the language to use for OCR detection (e.g., "eng" for English).
-     * @return true if OCR was initialized successfully, false otherwise.
+     * @return the current screen content as a ByteBuffer
      */
-    private external fun initializeOcr(dataPath: String, language: String): Boolean
+    private external fun getScreenByteBuffer(): ByteBuffer?
     
     /**
-     * Native method for detecting text in the entire current screen bitmap.
+     * Native method for getting the current screen dimensions.
      * 
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result.
+     * @return a Point containing the width (x) and height (y) of the screen
      */
-    private external fun detectTextFull(minConfidence: Float): OcrResult
-    
-    /**
-     * Native method for detecting text in a specific region of the current screen bitmap.
-     * 
-     * @param x the horizontal position of the region of interest.
-     * @param y the vertical position of the region of interest.
-     * @param width the width of the region of interest.
-     * @param height the height of the region of interest.
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result.
-     */
-    private external fun detectTextAt(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        minConfidence: Float
-    ): OcrResult
-    
-    /**
-     * Native method for finding specific text in the entire current screen bitmap.
-     * 
-     * @param textToFind the text to search for.
-     * @param exactMatch if true, requires exact text match; if false, searches for textToFind within detected text.
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result.
-     */
-    private external fun findTextFull(
-        textToFind: String,
-        exactMatch: Boolean,
-        minConfidence: Float
-    ): OcrResult
-    
-    /**
-     * Native method for finding specific text in a region of the current screen bitmap.
-     * 
-     * @param textToFind the text to search for.
-     * @param x the horizontal position of the region of interest.
-     * @param y the vertical position of the region of interest.
-     * @param width the width of the region of interest.
-     * @param height the height of the region of interest.
-     * @param exactMatch if true, requires exact text match; if false, searches for textToFind within detected text.
-     * @param minConfidence minimum confidence level (0-100) for text to be considered valid.
-     * @return the OCR detection result.
-     */
-    private external fun findTextAt(
-        textToFind: String,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        exactMatch: Boolean,
-        minConfidence: Float
-    ): OcrResult
+    private external fun getScreenDimensions(): android.graphics.Point
 }

@@ -245,6 +245,7 @@ internal open class CompatDeserializer : Deserializer {
             ConditionType.ON_BROADCAST_RECEIVED -> deserializeConditionBroadcastReceived(jsonCondition)
             ConditionType.ON_COUNTER_REACHED -> deserializeConditionCounterReached(jsonCondition)
             ConditionType.ON_IMAGE_DETECTED -> deserializeConditionImageDetected(jsonCondition)
+            ConditionType.ON_OCR_TEXT_DETECTED -> deserializeConditionOcrTextDetected(jsonCondition)
             ConditionType.ON_TIMER_REACHED -> deserializeConditionTimerReached(jsonCondition)
             null -> null
         }
@@ -341,6 +342,38 @@ internal open class CompatDeserializer : Deserializer {
             type = ConditionType.ON_TIMER_REACHED,
             timerValueMs = timerValueMs,
             restartWhenReached = restartWhenReached,
+        )
+    }
+    
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    open fun deserializeConditionOcrTextDetected(jsonCondition: JsonObject): ConditionEntity? {
+        val id = jsonCondition.getLong("id", true) ?: return null
+        val eventId = jsonCondition.getLong("eventId", true) ?: return null
+        val area = jsonCondition.getRect("areaLeft", "areaTop", "areaRight", "areaBottom")
+            ?: return null
+        val textToFind = jsonCondition.getString("textToFind", true) ?: return null
+
+        return ConditionEntity(
+            id = id,
+            eventId = eventId,
+            name = jsonCondition.getString("name") ?: "",
+            priority = jsonCondition.getInt("priority") ?: 0,
+            type = ConditionType.ON_OCR_TEXT_DETECTED,
+            textToFind = textToFind,
+            exactTextMatch = jsonCondition.getBoolean("exactTextMatch") ?: false,
+            minTextConfidence = jsonCondition.getInt("minTextConfidence") ?: 80,
+            areaLeft = area.left,
+            areaTop = area.top,
+            areaRight = area.right,
+            areaBottom = area.bottom,
+            shouldBeDetected = jsonCondition.getBoolean("shouldBeDetected") ?: true,
+            detectionType = jsonCondition.getInt("detectionType")
+                ?.coerceIn(DETECTION_TYPE_LOWER_BOUND, DETECTION_TYPE_UPPER_BOUND)
+                ?: DETECTION_TYPE_DEFAULT_VALUE,
+            detectionAreaLeft = jsonCondition.getInt("detectionAreaLeft"),
+            detectionAreaTop = jsonCondition.getInt("detectionAreaTop"),
+            detectionAreaRight = jsonCondition.getInt("detectionAreaRight"),
+            detectionAreaBottom = jsonCondition.getInt("detectionAreaBottom"),
         )
     }
 

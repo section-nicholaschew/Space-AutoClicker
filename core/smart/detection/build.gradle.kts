@@ -152,4 +152,11 @@ dependencies {
     
     // Tesseract OCR dependencies
     implementation(libs.tess.two)
+    
+    // ML Kit dependencies for text recognition
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
+    
+    // Dagger Hilt for dependency injection
+    implementation("com.google.dagger:hilt-android:2.44")
+    annotationProcessor("com.google.dagger:hilt-compiler:2.44")
 }

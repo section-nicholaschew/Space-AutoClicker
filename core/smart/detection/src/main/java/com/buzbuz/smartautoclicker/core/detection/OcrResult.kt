@@ -34,32 +34,11 @@ data class OcrResult(
 ) {
     /**
      * Check if text was recognized.
-     *
+     * 
      * @return true if text was recognized, false otherwise.
      */
     fun isRecognized(): Boolean = recognized
-
-    /**
-     * Get the detected text.
-     *
-     * @return the detected text, or empty string if nothing was detected.
-     */
-    fun getText(): String = text
-
-    /**
-     * Get the confidence level of the detection.
-     *
-     * @return the confidence level (0-100).
-     */
-    fun getConfidence(): Float = confidence
-
-    /**
-     * Get the bounding box of the detected text.
-     *
-     * @return the bounding box of the detected text.
-     */
-    fun getBoundingBox(): Rect = boundingBox
-
+    
     override fun toString(): String {
         return "OcrResult(recognized=$recognized, text='$text', confidence=$confidence, boundingBox=$boundingBox)"
     }
