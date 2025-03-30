@@ -55,4 +55,4 @@ import javax.inject.Singleton
 abstract class ClickDatabase : ScenarioDatabase()
 
 /** Current version of the database. */
-const val CLICK_DATABASE_VERSION = 16
+const val CLICK_DATABASE_VERSION = 17

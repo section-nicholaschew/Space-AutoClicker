@@ -46,6 +46,28 @@ internal fun ImageCondition.toEntity() = ConditionEntity(
     detectionAreaBottom = detectionArea?.bottom,
 )
 
+/** @return the entity equivalent of this OCR text condition. */
+internal fun OcrTextCondition.toEntity() = ConditionEntity(
+    id = id.databaseId,
+    eventId = eventId.databaseId,
+    name = name,
+    priority = priority,
+    type = ConditionType.ON_OCR_TEXT_DETECTED,
+    textToFind = textToFind,
+    exactTextMatch = exactTextMatch,
+    minTextConfidence = minTextConfidence,
+    areaLeft = area.left,
+    areaTop = area.top,
+    areaRight = area.right,
+    areaBottom = area.bottom,
+    detectionType = detectionType,
+    shouldBeDetected = shouldBeDetected,
+    detectionAreaLeft = detectionArea?.left,
+    detectionAreaTop = detectionArea?.top,
+    detectionAreaRight = detectionArea?.right,
+    detectionAreaBottom = detectionArea?.bottom,
+)
+
 internal fun TriggerCondition.toEntity(): ConditionEntity = when (this) {
     is TriggerCondition.OnBroadcastReceived -> toBroadcastReceivedEntity()
     is TriggerCondition.OnCounterCountReached -> toCounterReachedEntity()
@@ -94,6 +116,7 @@ private fun TriggerCondition.OnTimerReached.toTimerReachedEntity(): ConditionEnt
 internal fun ConditionEntity.toDomain(cleanIds: Boolean = false): Condition =
     when (type) {
         ConditionType.ON_IMAGE_DETECTED -> toDomainImageCondition(cleanIds)
+        ConditionType.ON_OCR_TEXT_DETECTED -> toDomainOcrTextCondition(cleanIds)
         ConditionType.ON_BROADCAST_RECEIVED -> toDomainBroadcastReceived(cleanIds)
         ConditionType.ON_COUNTER_REACHED -> toDomainCounterReached(cleanIds)
         ConditionType.ON_TIMER_REACHED -> toDomainTimerReached(cleanIds)
@@ -145,6 +168,22 @@ private fun ConditionEntity.toDomainTimerReached(cleanIds: Boolean = false): Tri
         name = name,
         durationMs = timerValueMs!!,
         restartWhenReached = restartWhenReached!!,
+    )
+
+/** @return the OcrTextCondition for this entity. */
+private fun ConditionEntity.toDomainOcrTextCondition(cleanIds: Boolean = false): OcrTextCondition =
+    OcrTextCondition(
+        id = Identifier(id = id, asTemporary = cleanIds),
+        eventId = Identifier(id = eventId, asTemporary = cleanIds),
+        name = name,
+        priority = priority,
+        textToFind = textToFind ?: "",
+        exactTextMatch = exactTextMatch ?: false,
+        minTextConfidence = minTextConfidence ?: 70,
+        area = Rect(areaLeft ?: 0, areaTop ?: 0, areaRight ?: 0, areaBottom ?: 0),
+        detectionType = detectionType ?: 0,
+        shouldBeDetected = shouldBeDetected ?: true,
+        detectionArea = getDetectionArea()
     )
 
 private fun CounterComparisonOperation.toDomain(): TriggerCondition.OnCounterCountReached.ComparisonOperation =

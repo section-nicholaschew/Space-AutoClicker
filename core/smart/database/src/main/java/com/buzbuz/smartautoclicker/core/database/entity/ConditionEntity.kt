@@ -82,6 +82,11 @@ data class ConditionEntity(
     @ColumnInfo(name = "detection_area_right") val detectionAreaRight: Int? = null,
     @ColumnInfo(name = "detection_area_bottom") val detectionAreaBottom: Int? = null,
 
+    // ConditionType.ON_OCR_TEXT_DETECTED
+    @ColumnInfo(name = "text_to_find") val textToFind: String? = null,
+    @ColumnInfo(name = "exact_text_match") val exactTextMatch: Boolean? = null,
+    @ColumnInfo(name = "min_text_confidence") val minTextConfidence: Int? = null,
+
     // ConditionType.ON_BROADCAST_RECEIVED
     @ColumnInfo(name = "broadcast_action") val broadcastAction: String? = null,
 
