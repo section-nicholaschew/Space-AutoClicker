@@ -95,4 +95,14 @@ data class ConditionEntity(
     // ConditionType.ON_TIMER_REACHED
     @ColumnInfo(name = "timer_value_ms") val timerValueMs: Long? = null,
     @ColumnInfo(name = "timer_restart_when_reached") val restartWhenReached: Boolean? = null,
+
+    // ConditionType.ON_TEXT_DETECTED
+    @ColumnInfo(name = "text_to_detect") val textToDetect: String? = null,
+    @ColumnInfo(name = "text_case_sensitive") val textCaseSensitive: Boolean? = null,
+    @ColumnInfo(name = "text_match_whole_words") val textMatchWholeWords: Boolean? = null,
+    @ColumnInfo(name = "text_confidence_threshold") val textConfidenceThreshold: Int? = null,
+    @ColumnInfo(name = "text_detection_area_left") val textDetectionAreaLeft: Int? = null,
+    @ColumnInfo(name = "text_detection_area_top") val textDetectionAreaTop: Int? = null,
+    @ColumnInfo(name = "text_detection_area_right") val textDetectionAreaRight: Int? = null,
+    @ColumnInfo(name = "text_detection_area_bottom") val textDetectionAreaBottom: Int? = null,
 ) : EntityWithId

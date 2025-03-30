@@ -278,6 +278,7 @@ internal open class CompatV13Deserializer : CompatDeserializer() {
     override fun deserializeConditionBroadcastReceived(jsonCondition: JsonObject): ConditionEntity? = null
     override fun deserializeConditionCounterReached(jsonCondition: JsonObject): ConditionEntity? = null
     override fun deserializeConditionTimerReached(jsonCondition: JsonObject): ConditionEntity? = null
+    override fun deserializeConditionTextDetected(jsonCondition: JsonObject): ConditionEntity? = null
     override fun deserializeActionChangeCounter(jsonChangeCounter: JsonObject): ActionEntity? = null
     override fun deserializeActionNotification(jsonNotification: JsonObject): ActionEntity? = null
 }

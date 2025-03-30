@@ -244,6 +244,7 @@ internal open class CompatDeserializer : Deserializer {
             ConditionType.ON_COUNTER_REACHED -> deserializeConditionCounterReached(jsonCondition)
             ConditionType.ON_IMAGE_DETECTED -> deserializeConditionImageDetected(jsonCondition)
             ConditionType.ON_TIMER_REACHED -> deserializeConditionTimerReached(jsonCondition)
+            ConditionType.ON_TEXT_DETECTED -> deserializeConditionTextDetected(jsonCondition)
             null -> null
         }
 
@@ -347,6 +348,28 @@ internal open class CompatDeserializer : Deserializer {
     open fun deserializeConditionType(jsonCondition: JsonObject): ConditionType? =
         jsonCondition.getEnum<ConditionType>("type", shouldLogError = true)
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    open fun deserializeConditionTextDetected(jsonCondition: JsonObject): ConditionEntity? {
+        val id = jsonCondition.getLong("id", true) ?: return null
+        val eventId = jsonCondition.getLong("eventId", true) ?: return null
+        val textToDetect = jsonCondition.getString("textToDetect") ?: return null
+
+        return ConditionEntity(
+            id = id,
+            eventId = eventId,
+            name = jsonCondition.getString("name") ?: "",
+            priority = jsonCondition.getInt("priority") ?: 0,
+            type = ConditionType.ON_TEXT_DETECTED,
+            textToDetect = textToDetect,
+            textCaseSensitive = jsonCondition.getBoolean("textCaseSensitive") ?: true,
+            textMatchWholeWords = jsonCondition.getBoolean("textMatchWholeWords") ?: false,
+            textConfidenceThreshold = jsonCondition.getInt("textConfidenceThreshold") ?: 75,
+            textDetectionAreaLeft = jsonCondition.getInt("textDetectionAreaLeft"),
+            textDetectionAreaTop = jsonCondition.getInt("textDetectionAreaTop"),
+            textDetectionAreaRight = jsonCondition.getInt("textDetectionAreaRight"),
+            textDetectionAreaBottom = jsonCondition.getInt("textDetectionAreaBottom"),
+        )
+    }
 
     // ======================= ACTION
 
